@@ -123,7 +123,7 @@ def collision_sprite():
 
 def player_animation():
     global player_surface, player_index
-    if player_rectangle.bottom < 300:  # if it isnt touching the floor we show jump img
+    if player_rectangle.bottom < 300:
         # jump
         player_surface = player_jump
     else:
@@ -150,11 +150,9 @@ player = pygame.sprite.GroupSingle()
 player.add(Player())
 obstacle_group = pygame.sprite.Group()
 
-sky_surface = pygame.image.load('Sky.png').convert_alpha()  # imports an image
+sky_surface = pygame.image.load('Sky.png').convert_alpha()
 ground_surface = pygame.image.load('ground.png').convert_alpha()
 
-# score_surface = test_font.render('Welcome', False, (64,64,64))
-# score_rectangle = score_surface.get_rect(center = (400, 50))
 
 # obstacles section - snail
 snail_frame1 = pygame.image.load('Snail/snail1.png').convert_alpha()
@@ -245,13 +243,9 @@ while True:
     if game_active:
         screen.blit(sky_surface, (0, 0))
         screen.blit(ground_surface, (0, 300))
-        # pygame.draw.rect(screen, 'Pink', score_rectangle)
-        # pygame.draw.rect(screen, 'Pink', score_rectangle, 6)
-        # screen.blit(score_surface, score_rectangle)
         score = display_score()
 
         # Player section
-
         player.draw(screen)
         player.update()
         obstacle_group.draw(screen)
@@ -261,7 +255,6 @@ while True:
 
         # collision - game over
         game_active = collision_sprite()
-        # game_active = collisions(player_rectangle, obstacle_rectangle_list)
 
     else:
         screen.fill((94, 129, 162))
