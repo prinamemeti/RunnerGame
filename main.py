@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(midbottom=(80, 300))
         self.gravity = 0
 
-        self.jump_sound = pygame.mixer.Sound('Audio/jump.mp3')
+        self.jump_sound = pygame.mixer.Sound('Audio/jump.ogg')
         self.jump_sound.set_volume(0.3)
 
     def player_input(self):
@@ -106,7 +106,7 @@ test_font = pygame.font.Font('Font/Pixeltype.ttf', 70)
 game_active = False
 start_time = 0
 score = 0
-bg_music = pygame.mixer.Sound('Audio/music.wav')
+bg_music = pygame.mixer.Sound('Audio/music.ogg')
 bg_music.play(loops=-1)
 
 player = pygame.sprite.GroupSingle()
@@ -153,17 +153,13 @@ game_message = test_font.render('Press space to run', False, (111, 196, 169))
 game_message_rectangle = game_message.get_rect(center=(400, 330))
 
 # Timer section
-obstacle_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(obstacle_timer, 1500)
-snail_ani_timer = pygame.USEREVENT + 2
-pygame.time.set_timer(snail_ani_timer, 500)
-
-fly_ani_timer = pygame.USEREVENT + 3
-pygame.time.set_timer(fly_ani_timer, 200)
+# pygame.time.set_timer doesn't work in the browser (pygbag), so obstacles
+# are spawned by checking the clock each frame instead.
+OBSTACLE_INTERVAL = 1500  # ms between obstacles
+next_obstacle_time = 0
 
 async def main():
-    global game_active, start_time, score, player_gravity
-    global snail_frame_index, snail_surface, fly_frame_index, fly_surface
+    global game_active, start_time, score, player_gravity, next_obstacle_time
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -175,30 +171,17 @@ async def main():
                     if event.key == pygame.K_SPACE and player_rectangle.bottom == 300:
                         player_gravity = -20
 
-                if game_active:
-                    if event.type == obstacle_timer:
-                        obstacle_group.add(Obstacle(choice(['fly', 'snail', 'snail', 'snail'])))
-
-                    if event.type == snail_ani_timer:
-                        if snail_frame_index == 0:
-                            snail_frame_index = 1
-                        else:
-                            snail_frame_index = 0
-                        snail_surface = snail_frames[snail_frame_index]
-                    if event.type == fly_ani_timer:
-                        if fly_frame_index == 0:
-                            fly_frame_index = 1
-                        else:
-                            fly_frame_index = 0
-                        fly_surface = fly_frames[fly_frame_index]
-
-
             else:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     print('space pressed')
                     game_active = True
 
                     start_time = int(pygame.time.get_ticks() / 1000)  # resets score
+                    next_obstacle_time = pygame.time.get_ticks() + OBSTACLE_INTERVAL
+
+        if game_active and pygame.time.get_ticks() >= next_obstacle_time:
+            obstacle_group.add(Obstacle(choice(['fly', 'snail', 'snail', 'snail'])))
+            next_obstacle_time += OBSTACLE_INTERVAL
 
         if game_active:
             screen.blit(sky_surface, (0, 0))
@@ -232,4 +215,4 @@ async def main():
         pygame.display.update()
         clock.tick(60)
         await asyncio.sleep(0)
-    asyncio.run(main())
+asyncio.run(main())
